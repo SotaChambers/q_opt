@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 from pyqubo import Array, Constraint, Placeholder
 from dwave.system import DWaveSampler, EmbeddingComposite
+from openjij import SQASampler
 
 from utils.utils import load_yaml
 
 # --------- PARAMS ---------- #
-
+select_solver = "openjij"
 N = 5
 df = pd.read_csv("data/distance.csv", index_col=0)
 Q = np.array(df)
@@ -61,8 +62,12 @@ dw_sampler = DWaveSampler(
 )
 
 # 問題の埋め込み
-sampler = EmbeddingComposite(dw_sampler)
-
+if select_solver == "openjij":
+    sampler = SQASampler()
+elif select_solver == "d-wave":
+    sampler = EmbeddingComposite(dw_sampler)
+else:
+    raise NotImplementedError("only openjij and d-wave are supported")
 # 実行
 sampleset = sampler.sample_qubo(qubo, num_reads=10)
 
